@@ -1,5 +1,8 @@
+// ------------------- Server.java -------------------
 import java.io.*;
 import java.net.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 
 public class Server {
@@ -11,12 +14,13 @@ public class Server {
     public Server(int port, String uuid) {
         this.port = port;
         this.serverUUID = uuid;
+        DatabaseHelper.init(); // DB tablolarını oluştur
     }
 
     public void startServer() {
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             new Thread(this::broadcastPresence).start();
-            System.out.println("✅ Sunucu başlatıldı, bağlantılar bekleniyor...");
+            System.out.println(" Sunucu başlatıldı, bağlantılar bekleniyor...");
 
             while (true) {
                 Socket socket = serverSocket.accept();
@@ -43,6 +47,7 @@ public class Server {
     }
 
     public synchronized void addClient(String username, ClientHandler handler) {
+        DatabaseHelper.saveUser(username); // DB’ye kaydet
         clients.put(username, handler);
         updateUserLists();
         System.out.println("👤 Yeni kullanıcı bağlandı: " + username);
@@ -61,8 +66,9 @@ public class Server {
         }
     }
 
-    // 🔹 Mesajı sadece hedef kullanıcıya gönder
+    // 🔹 Mesajı sadece hedef kullanıcıya gönder ve DB’ye kaydet
     public synchronized void sendPrivateMessage(String fromUser, String toUser, String message) {
+        DatabaseHelper.saveMessage(fromUser, toUser, message); // DB kaydı
         ClientHandler target = clients.get(toUser);
         if (target != null) {
             target.sendMessage(fromUser + "|" + message);
@@ -91,6 +97,8 @@ class ClientHandler implements Runnable {
             username = in.readLine();
             server.addClient(username, this);
 
+            loadPreviousMessages(); // eski mesajları yükle
+
             String line;
             while ((line = in.readLine()) != null) {
                 if (line.contains("|")) {
@@ -108,6 +116,19 @@ class ClientHandler implements Runnable {
         } finally {
             try { socket.close(); } catch (IOException ignored) {}
             server.removeClient(username);
+        }
+    }
+
+    private void loadPreviousMessages() {
+        try (ResultSet rs = DatabaseHelper.getMessagesForUser(username)) {
+            while (rs != null && rs.next()) {
+                String sender = rs.getString("sender");
+                String receiver = rs.getString("receiver");
+                String message = rs.getString("message");
+                this.sendMessage(sender + "|" + message);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
