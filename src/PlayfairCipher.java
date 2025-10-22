@@ -1,3 +1,4 @@
+// ------------------- PlayfairCipher.java -------------------
 import java.awt.Point;
 import java.util.HashMap;
 import java.util.Map;
