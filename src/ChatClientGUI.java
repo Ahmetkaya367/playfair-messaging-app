@@ -1,3 +1,4 @@
+// ------------------- ChatClientGUI.java -------------------
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -5,13 +6,8 @@ import java.awt.event.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
 import java.io.*;
 import java.net.*;
-import java.text.SimpleDateFormat;
-import java.util.*;
 
 public class ChatClientGUI {
     private JFrame frame;
@@ -108,7 +104,7 @@ public class ChatClientGUI {
         targetField.setEditable(false);
         targetField.setPreferredSize(new Dimension(100,30));
         inputField = new JTextField();
-        sendButton = new JButton("Gönder");
+        sendButton = new JButton("kGönder");
         inputPanel.add(targetField, BorderLayout.WEST);
         inputPanel.add(inputField, BorderLayout.CENTER);
         inputPanel.add(sendButton, BorderLayout.EAST);
@@ -228,7 +224,6 @@ public class ChatClientGUI {
             JLabel userLabel = new JLabel(user);
             userLabel.setForeground(Color.WHITE);
             userLabel.setOpaque(true);
-            // seçili kullanıcı yeşil
             if(user.equals(selectedUser)){
                 userLabel.setBackground(new Color(0,200,0));
             } else {
@@ -243,15 +238,14 @@ public class ChatClientGUI {
                     targetField.setText(user);
                     showMessagesForUser(user);
                     selectedUser = user;
-                    // tüm kullanıcıların rengini güncelle
                     Component[] comps = usersPanel.getComponents();
                     for(Component c : comps){
                         if(c instanceof JLabel){
                             JLabel lbl = (JLabel) c;
                             if(lbl.getText().equals(selectedUser)){
-                                lbl.setBackground(new Color(0,200,0)); // yeşil
+                                lbl.setBackground(new Color(0,200,0));
                             } else {
-                                lbl.setBackground(new Color(70,70,70)); // eski renk
+                                lbl.setBackground(new Color(70,70,70));
                             }
                         }
                     }
